@@ -1,0 +1,18 @@
+# https://github.com/snipundercover/DarkChallenge/
+
+affectedGamemodes:
+  - survival
+  - adventure
+
+affectedDimensions:
+  - overworld
+
+safeTime:
+  from: 12500 # about sunset
+  to: 23500   # about sunrise
+
+burnLength: 160 # 8 seconds
+
+helmetDamage:
+  waitTime: 80 # 4 seconds
+  ignoreUnbreaking: false

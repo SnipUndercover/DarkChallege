@@ -1,0 +1,10 @@
+name:        DarkChallenge
+version:     '${version}'
+main:        ovh.snipundercover.darkchallenge.DarkChallenge
+api-version: 1.18
+authors:     [ SnipUndercover ]
+description: Makes players burn as if they are zombies.
+website:     https://snipundercover.ovh/
+commands:
+  disable:
+    description: Disable the plugin.
