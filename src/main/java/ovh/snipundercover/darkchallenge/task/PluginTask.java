@@ -23,8 +23,6 @@ public abstract class PluginTask extends BukkitRunnable {
 			PluginLogger.getLogger(PluginTask.class);
 	
 	static {
-		LOGGER.setLevel(Level.FINE);
-		
 		LOGGER.fine("Initializing plugin tasks.");
 		final Set<Class<? extends PluginTask>> availableTaskClasses =
 				new Reflections(PluginTask.class.getPackageName()).getSubTypesOf(PluginTask.class);
