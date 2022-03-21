@@ -20,6 +20,10 @@ public final class DurabilityPercentageTask extends PluginTask {
 			Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard();
 	private static final PluginLogger LOGGER         = PluginLogger.getLogger(DurabilityPercentageTask.class);
 	
+	//only allow instantiation from PluginTask
+	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
+	DurabilityPercentageTask() {}
+	
 	static {
 		if (getObjective() == null) {
 			LOGGER.fine("\"{0}\" objective missing, creating.", OBJECTIVE_NAME);

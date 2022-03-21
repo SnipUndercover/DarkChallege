@@ -33,6 +33,10 @@ public final class IgnitePlayersTask extends PluginTask {
 			PluginLogger.getLogger(IgnitePlayersTask.class);
 	private final        Map<UUID, Integer> playerHelmetDamageTicks = new HashMap<>();
 	
+	//only allow instantiation from PluginTask
+	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
+	IgnitePlayersTask() {}
+	
 	@Override
 	public void run() {
 		if (isCancelled()) return;
