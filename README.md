@@ -6,15 +6,15 @@
 *A plugin that causes players to burn if exposed to sunlight, similar to zombies.*
 
 The player will burn unless:
- - they're not in a compatible gamemode *(survival, adventure)*
- - they're not in the overworld
- - it is night
- - they're in the dark
- - there's a block above the player
- - the player is in the water
- - the player has a helmet on
+- they're not in a compatible gamemode *(survival, adventure)*
+- they're not in a compatible dimension *(overworld)*
+- it is night
+- they're in the dark
+- there's a block above the player
+- the player is in the water
+- the player has a helmet on
 
-Some of the details can be configured in `config.yml`.
+Some details will be able to be configured in the future in `config.yml`.
 
 ### `config.yml` structure
 ```yml
@@ -52,7 +52,8 @@ helmetDamage:
 ```
 
 ### TODO
- - Add documentation
- - Add more tests
- - Rework `IgnitePlayersTask`
- - Try to make `plugin.yml` command declaration optional
+- Add documentation
+- Add more tests
+- Rework `IgnitePlayersTask`
+- Try to make `plugin.yml` command declaration optional
+- Allow changing of plugin log levels in `config.yml`
