@@ -110,13 +110,32 @@ public abstract class PluginTask extends BukkitRunnable {
 	public BukkitTask start(long delay, long period) {
 		LOGGER.finer("Starting task {0}...", getClass().getSimpleName());
 		init();
-		return task = this.runTaskTimer(DarkChallenge.getPlugin(), delay, period);
+		try {
+			BukkitTask task = this.runTaskTimer(DarkChallenge.getPlugin(), delay, period);
+			LOGGER.finer("...done. Task ID: {0}", task.getTaskId());
+			return this.task = task;
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING,
+			           "An error occurred while starting task %s:".formatted(getClass().getSimpleName()),
+			           e
+			);
+			throw e;
+		}
 	}
 	
 	public void stop() {
 		LOGGER.finer("Stopping task {0}...", getClass().getSimpleName());
-		task.cancel();
-		task = null;
-		cleanup();
+		try {
+			task.cancel();
+			task = null;
+			cleanup();
+			LOGGER.finer("...done.");
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING,
+			           "An error occurred while stopping task %s:".formatted(getClass().getSimpleName()),
+			           e
+			);
+			throw e;
+		}
 	}
 }
