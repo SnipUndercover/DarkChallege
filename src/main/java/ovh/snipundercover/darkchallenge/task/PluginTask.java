@@ -17,7 +17,7 @@ import java.util.logging.Level;
 /**
  * An interface for creating Bukkit tasks with ease.
  */
-public abstract class PluginTask extends BukkitRunnable {
+public abstract class PluginTask {
 	private static final Map<Class<? extends PluginTask>, PluginTask> TASKS  = new Hashtable<>();
 	private static final PluginLogger                                 LOGGER =
 			PluginLogger.getLogger(PluginTask.class);
@@ -98,10 +98,14 @@ public abstract class PluginTask extends BukkitRunnable {
 	@Getter
 	protected BukkitTask task;
 	
+	//override methods
 	void init() {}
+	
+	abstract void run();
 	
 	void cleanup() {}
 	
+	//instance methods
 	@SuppressWarnings("UnusedReturnValue")
 	public BukkitTask start() {
 		return start(0L, 1L);
@@ -111,7 +115,13 @@ public abstract class PluginTask extends BukkitRunnable {
 		LOGGER.finer("Starting task {0}...", getClass().getSimpleName());
 		init();
 		try {
-			BukkitTask task = this.runTaskTimer(DarkChallenge.getPlugin(), delay, period);
+			BukkitTask task = new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (isCancelled()) return;
+					PluginTask.this.run();
+				}
+			}.runTaskTimer(DarkChallenge.getPlugin(), delay, period);
 			LOGGER.finer("...done. Task ID: {0}", task.getTaskId());
 			return this.task = task;
 		} catch (Exception e) {
