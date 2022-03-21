@@ -35,7 +35,7 @@ public final class DurabilityPercentageTask extends PluginTask {
 		} else LOGGER.fine("\"{0}\" objective already exists.", OBJECTIVE_NAME);
 	}
 	
-	public void init() {
+	void init() {
 		throttle = 0;
 	}
 	
@@ -86,7 +86,7 @@ public final class DurabilityPercentageTask extends PluginTask {
 	}
 	
 	@Override
-	public void cleanup() {
+	void cleanup() {
 		LOGGER.fine("Unregistering objective \"{0}\"...");
 		try {
 			getObjective().unregister();

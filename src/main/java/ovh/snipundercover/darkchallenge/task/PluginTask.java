@@ -94,9 +94,9 @@ public abstract class PluginTask extends BukkitRunnable {
 	@Getter
 	protected BukkitTask task;
 	
-	public void init() {}
+	void init() {}
 	
-	public void cleanup() {}
+	void cleanup() {}
 	
 	@SuppressWarnings("UnusedReturnValue")
 	public BukkitTask start() {

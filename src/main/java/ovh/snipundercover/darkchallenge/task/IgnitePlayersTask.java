@@ -40,7 +40,7 @@ public final class IgnitePlayersTask extends PluginTask {
 	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
 	IgnitePlayersTask() {}
 	
-	public void init() {
+	void init() {
 		throttle = 0;
 	}
 	
