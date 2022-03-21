@@ -11,6 +11,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import ovh.snipundercover.darkchallenge.logging.PluginLogger;
 
 import java.util.Objects;
+import java.util.logging.Level;
 
 @SuppressWarnings("unused")
 public final class DurabilityPercentageTask extends PluginTask {
@@ -19,6 +20,8 @@ public final class DurabilityPercentageTask extends PluginTask {
 	private static final Scoreboard   scoreboard     =
 			Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard();
 	private static final PluginLogger LOGGER         = PluginLogger.getLogger(DurabilityPercentageTask.class);
+	private              int          throttle       = 0;
+	private static final int          MAX_THROTTLE   = 20;
 	
 	//only allow instantiation from PluginTask
 	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
@@ -32,6 +35,10 @@ public final class DurabilityPercentageTask extends PluginTask {
 		} else LOGGER.fine("\"{0}\" objective already exists.", OBJECTIVE_NAME);
 	}
 	
+	public void init() {
+		throttle = 0;
+	}
+	
 	@Override
 	public void run() {
 		Bukkit.getOnlinePlayers().forEach(player -> {
@@ -39,7 +46,8 @@ public final class DurabilityPercentageTask extends PluginTask {
 			final String playerName = player.getName();
 			final Score score = getObjective().getScore(playerName);
 			if (helmet == null) {
-				LOGGER.fine("{0} has no helmet.", playerName);
+				if (throttle == MAX_THROTTLE)
+					LOGGER.fine("{0} has no helmet.", playerName);
 				score.setScore(0);
 				return;
 			}
@@ -48,32 +56,44 @@ public final class DurabilityPercentageTask extends PluginTask {
 					? helmet.getItemMeta()
 					: Bukkit.getItemFactory().getItemMeta(helmet.getType());
 			assert helmetMeta != null;
-			LOGGER.finest("Max durability: {0}, unbreakable: {1}, is Damageable: {2}",
-			              maxDurability,
-			              helmetMeta.isUnbreakable(),
-			              helmetMeta instanceof Damageable
-			);
+			if (throttle == MAX_THROTTLE)
+				LOGGER.finest("Helmet type: {0}, max durability: {1}, unbreakable: {2}, is Damageable: {3}",
+							  helmet.getType(),
+				              maxDurability,
+				              helmetMeta.isUnbreakable(),
+				              helmetMeta instanceof Damageable
+				);
 			if (maxDurability == 0
 					|| helmetMeta.isUnbreakable()
 					|| !(helmetMeta instanceof Damageable damageableItemMeta)) {
-				LOGGER.fine("{0}'s helmet can not take damage.", playerName);
+				if (throttle == MAX_THROTTLE)
+					LOGGER.fine("{0}'s helmet can not take damage.", playerName);
 				score.setScore(100);
 				return;
 			}
 			int currentDurability = damageableItemMeta.getDamage();
 			int percentage = (maxDurability - currentDurability) * 100 / maxDurability;
-			LOGGER.finer("Helmet has {0}/{1} damage ({2}%)",
-			             maxDurability - currentDurability,
-			             maxDurability,
-			             percentage
-			);
+			if (throttle == MAX_THROTTLE)
+				LOGGER.finer("Helmet has {0}/{1} damage ({2}%)",
+				             maxDurability - currentDurability,
+				             maxDurability,
+				             percentage
+				);
 			score.setScore(percentage);
+			if (throttle == MAX_THROTTLE) throttle = 0;
+			else throttle++;
 		});
 	}
 	
 	@Override
 	public void cleanup() {
-		getObjective().unregister();
+		LOGGER.fine("Unregistering objective \"{0}\"...");
+		try {
+			getObjective().unregister();
+		} catch (IllegalStateException e) {
+			LOGGER.log(Level.FINER, "Encountered exception while unregistering:", e);
+			LOGGER.fine("Objective \"{0}\" already unregistered, moving on.");
+		}
 	}
 	
 	public static Objective getObjective() {
