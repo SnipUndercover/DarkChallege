@@ -35,13 +35,17 @@ public abstract class PluginTask extends BukkitRunnable {
 				TASKS.put(clazz, clazz.getConstructor().newInstance());
 				count.getAndIncrement();
 				LOGGER.finer("... done");
-			} catch (InvocationTargetException |
-					InstantiationException |
-					IllegalAccessException |
-					NoSuchMethodException e) {
+			} catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
 				//should never happen
 				LOGGER.log(Level.WARNING,
 				           "An error occurred while initializing task %s:".formatted(clazz.getSimpleName()), e
+				);
+			} catch (NoSuchMethodException e) {
+				//should never happen
+				LOGGER.log(Level.WARNING,
+				           "An error occurred while initializing task {0}: "
+						           + "the class does not have an accessible non-params constructor.",
+				           clazz.getSimpleName()
 				);
 			}
 		});
