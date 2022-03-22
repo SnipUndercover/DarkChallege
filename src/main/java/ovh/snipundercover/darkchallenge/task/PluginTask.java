@@ -22,7 +22,7 @@ public abstract class PluginTask {
 	private static final PluginLogger                                 LOGGER =
 			PluginLogger.getLogger(PluginTask.class);
 	
-	final long delay = 0L;
+	final long delay  = 0L;
 	final long period = 1L;
 	
 	static {
@@ -105,6 +105,8 @@ public abstract class PluginTask {
 	void init() {}
 	
 	abstract void run();
+	
+	public void reload() {}
 	
 	void cleanup() {}
 	
