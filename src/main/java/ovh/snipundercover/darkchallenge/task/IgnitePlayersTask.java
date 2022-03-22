@@ -46,7 +46,6 @@ public final class IgnitePlayersTask extends PluginTask {
 	
 	@Override
 	public void run() {
-		if (isCancelled()) return;
 		Bukkit.getOnlinePlayers().forEach(player -> {
 			final String playerName = player.getName();
 			
