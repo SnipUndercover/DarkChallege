@@ -136,8 +136,8 @@ public abstract class PluginTask {
 		LOGGER.finer("Stopping task {0}...", getClass().getSimpleName());
 		try {
 			task.cancel();
-			task = null;
 			cleanup();
+			task = null;
 			LOGGER.finer("...done.");
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING,
