@@ -102,13 +102,19 @@ public abstract class PluginTask {
 	protected BukkitTask task;
 	
 	//override methods
-	void init() {}
+	void init() {
+		LOGGER.fine("{0} has no init() implementation, skipping.", this.getClass().getSimpleName());
+	}
 	
 	abstract void run();
 	
-	public void reload() {}
+	public void reload() {
+		LOGGER.fine("{0} has no reload() implementation, skipping.", this.getClass().getSimpleName());
+	}
 	
-	void cleanup() {}
+	void cleanup() {
+		LOGGER.fine("{0} has no cleanup() implementation, skipping.", this.getClass().getSimpleName());
+	}
 	
 	//instance methods
 	@SuppressWarnings("UnusedReturnValue")
