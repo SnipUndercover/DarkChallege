@@ -15,12 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
- * An interface for creating Bukkit tasks with ease.
+ * An interface for creating recurring Bukkit tasks with ease.
  */
 public abstract class PluginTask {
 	private static final Map<Class<? extends PluginTask>, PluginTask> TASKS  = new Hashtable<>();
 	private static final PluginLogger                                 LOGGER =
 			PluginLogger.getLogger(PluginTask.class);
+	
+	final long delay = 0L;
+	final long period = 1L;
 	
 	static {
 		LOGGER.fine("Initializing plugin tasks.");
@@ -108,10 +111,6 @@ public abstract class PluginTask {
 	//instance methods
 	@SuppressWarnings("UnusedReturnValue")
 	public BukkitTask start() {
-		return start(0L, 1L);
-	}
-	
-	public BukkitTask start(long delay, long period) {
 		LOGGER.finer("Starting task {0}...", getClass().getSimpleName());
 		init();
 		try {
@@ -121,7 +120,7 @@ public abstract class PluginTask {
 					if (isCancelled()) return;
 					PluginTask.this.run();
 				}
-			}.runTaskTimer(DarkChallenge.getPlugin(), delay, period);
+			}.runTaskTimer(DarkChallenge.getPlugin(), this.delay, this.period);
 			LOGGER.finer("...done. Task ID: {0}", task.getTaskId());
 			return this.task = task;
 		} catch (Exception e) {
