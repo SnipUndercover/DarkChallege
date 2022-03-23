@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public final class Utils {
 	private Utils() {}
@@ -22,5 +25,24 @@ public final class Utils {
 		return Arrays.stream(s)
 		             .map(Utils::color)
 		             .toArray(String[]::new);
+	}
+	
+	@Contract(pure = true)
+	public static <T> @NotNull Predicate<T> isParsable(@NotNull Function<T, ?> parse) {
+		return isParsable(parse, null);
+	}
+	
+	@Contract(pure = true)
+	public static <T> @NotNull Predicate<T>
+	isParsable(@NotNull Function<T, ?> parse, BiConsumer<T, Exception> onFail) {
+		return (val) -> {
+			try {
+				parse.apply(val);
+				return true;
+			} catch (Exception e) {
+				if (onFail != null) onFail.accept(val, e);
+				return false;
+			}
+		};
 	}
 }
