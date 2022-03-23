@@ -123,8 +123,8 @@ public final class IgnitePlayersTask extends PluginTask {
 			//don't do anything if the player's in water
 			final Material type = block.getType();
 			final boolean isWaterOrWaterlogged = WATERLOGGED_MATERIALS.contains(type)
-					|| block.getBlockData() instanceof Waterlogged waterloggedBlocKData
-					&& waterloggedBlocKData.isWaterlogged();
+					|| block.getBlockData() instanceof Waterlogged waterloggedBlockData
+					&& waterloggedBlockData.isWaterlogged();
 			if (isWaterOrWaterlogged) {
 				if (throttle == MAX_THROTTLE) {
 					LOGGER.fine("Ignoring {0}: player is in water or a waterlogged block.", playerName);
