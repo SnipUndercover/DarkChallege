@@ -45,7 +45,7 @@ helmetDamage:
   # unbreaking 2 : 240 ticks / 12 seconds
   # unbreaking 3 : 320 ticks / 16 seconds
   # ...
-  waitTime: 80 # 4 seconds
+  interval: 80 # 4 seconds
   
   # whether to ignore unbreaking
   ignoreUnbreaking: false

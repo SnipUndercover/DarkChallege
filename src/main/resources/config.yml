@@ -14,5 +14,5 @@ safeTime:
 burnLength: 160 # 8 seconds
 
 helmetDamage:
-  waitTime: 80 # 4 seconds
+  interval: 80 # 4 seconds
   ignoreUnbreaking: false
