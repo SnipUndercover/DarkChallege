@@ -35,7 +35,7 @@ public abstract class PluginTask {
 		availableTaskClasses.forEach(clazz -> {
 			try {
 				LOGGER.finer("Attempting to initialize {0}...", clazz.getSimpleName());
-				TASKS.put(clazz, clazz.getConstructor().newInstance());
+				TASKS.put(clazz, clazz.getDeclaredConstructor().newInstance());
 				count.getAndIncrement();
 				LOGGER.finer("... done");
 			} catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
