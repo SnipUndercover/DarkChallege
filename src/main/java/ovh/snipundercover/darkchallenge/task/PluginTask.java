@@ -26,7 +26,7 @@ public abstract class PluginTask {
 	final long period = 1L;
 	
 	static {
-		LOGGER.fine("Initializing plugin tasks.");
+		LOGGER.info("Initializing plugin tasks...");
 		final Set<Class<? extends PluginTask>> availableTaskClasses =
 				new Reflections(PluginTask.class.getPackageName()).getSubTypesOf(PluginTask.class);
 		LOGGER.fine("Found {0} task classes.", availableTaskClasses.size());
@@ -34,10 +34,10 @@ public abstract class PluginTask {
 		AtomicInteger count = new AtomicInteger();
 		availableTaskClasses.forEach(clazz -> {
 			try {
-				LOGGER.finer("Attempting to initialize {0}...", clazz.getSimpleName());
+				LOGGER.fine("Attempting to initialize {0}...", clazz.getSimpleName());
 				TASKS.put(clazz, clazz.getConstructor().newInstance());
 				count.getAndIncrement();
-				LOGGER.finer("... done");
+				LOGGER.fine("... done");
 			} catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
 				//should never happen
 				LOGGER.log(Level.WARNING,
@@ -52,7 +52,7 @@ public abstract class PluginTask {
 				);
 			}
 		});
-		LOGGER.fine("Initialized {0}/{1} tasks successfully.",
+		LOGGER.info("Initialized {0}/{1} tasks successfully.",
 		            count.get(),
 		            availableTaskClasses.size()
 		);
@@ -64,7 +64,7 @@ public abstract class PluginTask {
 	}
 	
 	public static void startAll() {
-		LOGGER.fine("Starting plugin tasks...");
+		LOGGER.info("Starting plugin tasks...");
 		AtomicInteger count = new AtomicInteger();
 		TASKS.values().forEach(task -> {
 			try {
@@ -74,14 +74,14 @@ public abstract class PluginTask {
 				LOGGER.log(Level.WARNING, "Failed to start task %s:".formatted(task.getClass().getSimpleName()), e);
 			}
 		});
-		LOGGER.fine("Started {0}/{1} plugin tasks.",
+		LOGGER.info("Started {0}/{1} plugin tasks.",
 		            count.get(),
 		            TASKS.size()
 		);
 	}
 	
 	public static void stopAll() {
-		LOGGER.fine("Stopping plugin tasks...");
+		LOGGER.info("Stopping plugin tasks...");
 		AtomicInteger count = new AtomicInteger();
 		TASKS.values().forEach(task -> {
 			try {
@@ -91,7 +91,7 @@ public abstract class PluginTask {
 				LOGGER.log(Level.WARNING, "Failed to stop task %s:".formatted(task.getClass().getSimpleName()), e);
 			}
 		});
-		LOGGER.fine("Stopped {0}/{1} plugin tasks.",
+		LOGGER.info("Stopped {0}/{1} plugin tasks.",
 		            count.get(),
 		            TASKS.size()
 		);
@@ -119,7 +119,7 @@ public abstract class PluginTask {
 	//instance methods
 	@SuppressWarnings("UnusedReturnValue")
 	public BukkitTask start() {
-		LOGGER.finer("Starting task {0}...", getClass().getSimpleName());
+		LOGGER.fine("Starting task {0}...", getClass().getSimpleName());
 		init();
 		try {
 			BukkitTask task = new BukkitRunnable() {
@@ -129,7 +129,7 @@ public abstract class PluginTask {
 					PluginTask.this.run();
 				}
 			}.runTaskTimer(DarkChallenge.getPlugin(), this.delay, this.period);
-			LOGGER.finer("...done. Task ID: {0}", task.getTaskId());
+			LOGGER.fine("...done. Task ID: {0}", task.getTaskId());
 			return this.task = task;
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING,
@@ -141,12 +141,12 @@ public abstract class PluginTask {
 	}
 	
 	public void stop() {
-		LOGGER.finer("Stopping task {0}...", getClass().getSimpleName());
+		LOGGER.fine("Stopping task {0}...", getClass().getSimpleName());
 		try {
 			task.cancel();
 			cleanup();
 			task = null;
-			LOGGER.finer("...done.");
+			LOGGER.fine("...done.");
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING,
 			           "An error occurred while stopping task %s:".formatted(getClass().getSimpleName()),

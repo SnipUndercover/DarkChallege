@@ -30,7 +30,7 @@ public abstract class PluginCommandExecutor implements CommandExecutor {
 	public static void initCommands(DarkChallenge plugin) {
 		if (!COMMAND_HANDLERS.isEmpty())
 			throw new IllegalStateException("Command handlers already initialized!");
-		LOGGER.fine("Initializing commands.");
+		LOGGER.info("Initializing commands...");
 		
 		final var subclasses =
 				new Reflections(PluginCommandExecutor.class.getPackageName())
@@ -39,7 +39,7 @@ public abstract class PluginCommandExecutor implements CommandExecutor {
 		
 		AtomicInteger count = new AtomicInteger();
 		subclasses.forEach(clazz -> {
-			LOGGER.finer("Attempting to initialize {0}...", clazz.getSimpleName());
+			LOGGER.fine("Attempting to initialize {0}...", clazz.getSimpleName());
 			PluginCommandExecutor command;
 			try {
 				command = clazz.getConstructor().newInstance();
@@ -69,11 +69,11 @@ public abstract class PluginCommandExecutor implements CommandExecutor {
 			COMMAND_HANDLERS.put(ymlCommand.getName(), command);
 			ymlCommand.setExecutor(command);
 			count.getAndIncrement();
-			LOGGER.finer("... done");
+			LOGGER.fine("... done");
 		});
-		LOGGER.log(Level.FINE, "Initialized {0}/{1} command handlers.",
-		           count.get(),
-		           COMMAND_HANDLERS.size()
+		LOGGER.info("Initialized {0}/{1} command handlers.",
+		            count.get(),
+		            COMMAND_HANDLERS.size()
 		);
 	}
 	
