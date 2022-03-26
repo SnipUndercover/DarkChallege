@@ -1,57 +1,125 @@
 package ovh.snipundercover.darkchallenge.task;
 
+import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Waterlogged;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import ovh.snipundercover.darkchallenge.DarkChallenge;
 import ovh.snipundercover.darkchallenge.logging.PluginLogger;
+import ovh.snipundercover.darkchallenge.util.Constants;
+import ovh.snipundercover.darkchallenge.util.Range;
+import ovh.snipundercover.darkchallenge.util.Utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static ovh.snipundercover.darkchallenge.util.Constants.TICKS_PER_SECOND;
-import static ovh.snipundercover.darkchallenge.util.Constants.WATERLOGGED_MATERIALS;
-
-@SuppressWarnings("unused")
-@Deprecated
-//TODO reimplement
-public final class IgnitePlayersTask extends PluginTask {
-	public static final  int                MIN_SAFE_TIME           = 12500; //ticks
-	public static final  int                MAX_SAFE_TIME           = 23500; //ticks
-	public static final  int                FIRE_LENGTH             = 8 * TICKS_PER_SECOND; //seconds
-	public static final  int                HELMET_DAMAGE_DELAY     = 4 * TICKS_PER_SECOND; //seconds
-	public static final  List<GameMode>     AFFECTED_GAMEMODES      = List.of(GameMode.SURVIVAL, GameMode.ADVENTURE);
-	public static final  List<Environment>  AFFECTED_DIMENSIONS     = List.of(Environment.NORMAL);
-	private static final PluginLogger       LOGGER                  =
-			PluginLogger.getLogger(IgnitePlayersTask.class);
-	private final        Map<UUID, Integer> playerHelmetDamageTicks = new HashMap<>();
-	private static final int                MAX_THROTTLE            = 20;
-	private              int                throttle                = 0;
+public class IgnitePlayersTask extends PluginTask {
 	
+	private static final PluginLogger LOGGER = PluginLogger.getLogger(IgnitePlayersTask.class);
+	
+	private final   Set<GameMode>    affectedGamemodes  = new HashSet<>();
+	private final   Set<Environment> affectedDimensions = new HashSet<>();
+	private @Getter Range<Long>      safeTime;
+	private @Getter int              burnLength;
+	private @Getter int              interval;
+	private @Getter boolean          ignoreUnbreaking;
+	
+	private static final int MAX_THROTTLE = 20;
+	private              int throttle     = 0;
+	
+	private final Map<UUID, Integer> helmetDamageTicks = new Hashtable<>();
 	
 	//only allow instantiation from PluginTask
 	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
 	IgnitePlayersTask() {}
 	
+	@Override
 	void init() {
-		throttle = 0;
+		reload();
+		this.throttle = 0;
 	}
 	
 	@Override
-	public void run() {
+	public void reload() {
+		LOGGER.info("Reloading {0}...", this.getClass().getSimpleName());
+		FileConfiguration config = DarkChallenge.getPlugin().getConfig();
+		
+		Set<GameMode> affectedGamemodes =
+				config.getStringList("affectedGamemodes")
+				      .stream()
+				      .map(String::toUpperCase)
+				      .filter(Utils.isParsable(
+						      GameMode::valueOf,
+						      (name, e) -> LOGGER.warning(
+								      "Found unknown gamemode \"{0}\", ignoring. Did you spell it right?",
+								      name
+						      )
+				      ))
+				      .map(GameMode::valueOf)
+				      .collect(Collectors.toSet());
+		LOGGER.config("Affected gamemodes: {0}", affectedGamemodes);
+		this.affectedGamemodes.clear();
+		this.affectedGamemodes.addAll(affectedGamemodes);
+		
+		Set<Environment> affectedDimensions =
+				config.getStringList("affectedDimensions")
+				      .stream()
+				      .map(String::toUpperCase)
+				      .map(name -> name.equals("OVERWORLD") ? "NORMAL" : name)
+				      .filter(Utils.isParsable(
+						      Environment::valueOf,
+						      (name, e) -> LOGGER.warning(
+								      "Found unknown dimension \"{0}\", ignoring. Did you spell it right?",
+								      name
+						      )
+				      ))
+				      .map(Environment::valueOf)
+				      .collect(Collectors.toSet());
+		LOGGER.config("Affected gamemodes: {0}", affectedGamemodes);
+		this.affectedDimensions.clear();
+		this.affectedDimensions.addAll(affectedDimensions);
+		
+		ConfigurationSection safeTime = config.getConfigurationSection("safeTime");
+		assert safeTime != null;
+		final long from = safeTime.getLong("from");
+		final long to = safeTime.getLong("to");
+		LOGGER.config("Safe time: {0} - {1}", from, to);
+		this.safeTime = new Range<>(from, to);
+		
+		this.burnLength = config.getInt("burnLength");
+		LOGGER.config("Burn length: {0} ({1} seconds)",
+		              this.burnLength, "%.2f".formatted(this.burnLength / 20f)
+		);
+		
+		ConfigurationSection helmetDamage = config.getConfigurationSection("helmetDamage");
+		assert helmetDamage != null;
+		this.interval = helmetDamage.getInt("interval");
+		LOGGER.config("Helmet damage interval: {0} ({1} seconds)",
+		              this.interval, "%.2f".formatted(this.interval / 20f)
+		);
+		
+		this.ignoreUnbreaking = helmetDamage.getBoolean("ignoreUnbreaking");
+		LOGGER.config("Ignore unbreaking: " + (this.ignoreUnbreaking ? "yes" : "no"));
+		
+		LOGGER.info("...done.");
+	}
+	
+	@Override
+	void run() {
 		Bukkit.getOnlinePlayers().forEach(player -> {
 			final String playerName = player.getName();
 			
 			//ignore if the player is in creative/spectator
 			final GameMode gameMode = player.getGameMode();
-			if (!AFFECTED_GAMEMODES.contains(gameMode)) {
+			if (!affectedGamemodes.contains(gameMode)) {
 				if (throttle == MAX_THROTTLE) {
 					LOGGER.fine("Ignoring {0}: outside of affected gamemode.", playerName);
 					LOGGER.finer("Player has gamemode {0}.", gameMode);
@@ -63,7 +131,7 @@ public final class IgnitePlayersTask extends PluginTask {
 			
 			//don't do anything if we're not in the affected dimensions
 			final Environment dimension = world.getEnvironment();
-			if (!AFFECTED_DIMENSIONS.contains(dimension)) {
+			if (!affectedDimensions.contains(dimension)) {
 				if (throttle == MAX_THROTTLE) {
 					LOGGER.fine("Ignoring {0}: outside of affected dimension.", playerName);
 					LOGGER.finer("Player has dimension {0}.", dimension);
@@ -81,14 +149,10 @@ public final class IgnitePlayersTask extends PluginTask {
 			final long time = world.getTime();
 			
 			//don't do anything if it's night
-			if (time >= MIN_SAFE_TIME && time <= MAX_SAFE_TIME) {
+			if (safeTime.isInRange(time)) {
 				if (throttle == MAX_THROTTLE) {
 					LOGGER.fine("Ignoring {0}: it is night.", playerName);
-					LOGGER.finer("World time for player is {0} (between [{1}, {2}]).",
-					             time,
-					             MIN_SAFE_TIME,
-					             MAX_SAFE_TIME
-					);
+					LOGGER.finer("World time for player is {0} (between {1}).", time, safeTime);
 				}
 				return;
 			}
@@ -122,7 +186,7 @@ public final class IgnitePlayersTask extends PluginTask {
 			
 			//don't do anything if the player's in water
 			final Material type = block.getType();
-			final boolean isWaterOrWaterlogged = WATERLOGGED_MATERIALS.contains(type)
+			final boolean isWaterOrWaterlogged = Constants.WATERLOGGED_MATERIALS.contains(type)
 					|| block.getBlockData() instanceof Waterlogged waterloggedBlockData
 					&& waterloggedBlockData.isWaterlogged();
 			if (isWaterOrWaterlogged) {
@@ -148,55 +212,66 @@ public final class IgnitePlayersTask extends PluginTask {
 						? helmet.getItemMeta()
 						: Bukkit.getItemFactory().getItemMeta(helmet.getType());
 				assert helmetMeta != null;
-				if (maxDurability != 0
-						&& !helmetMeta.isUnbreakable()
-						&& helmetMeta instanceof Damageable damageable) {
+				
+				if (maxDurability == 0
+						|| helmetMeta.isUnbreakable()
+						|| !(helmetMeta instanceof Damageable damageable))
+					return; //we can't damage the helmet, we're done here
+				
+				if (throttle == MAX_THROTTLE)
+					LOGGER.finer("Player's helmet is damageable.", playerName);
+				
+				int unbreakingAmplifier = helmet.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
+				if (throttle == MAX_THROTTLE)
+					LOGGER.finer("Unbreaking level: {0}.", unbreakingAmplifier - 1);
+				
+				//wait HELMET_DAMAGE_DELAY * unbreakingAmplifier seconds between damage
+				int currentTicks = helmetDamageTicks.getOrDefault(uuid, 0) + 1;
+				if (currentTicks >= interval * unbreakingAmplifier) {
+					//time to damage
+					int newDamage = damageable.getDamage() + 1;
 					if (throttle == MAX_THROTTLE)
-						LOGGER.finer("Player's helmet is damageable.", playerName);
-					
-					int unbreakingAmplifier = helmet.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
-					if (throttle == MAX_THROTTLE)
-						LOGGER.finer("Unbreaking level: {0}.", unbreakingAmplifier);
-					
-					//wait HELMET_DAMAGE_DELAY * unbreakingAmplifier seconds between damage
-					int currentTicks = playerHelmetDamageTicks.getOrDefault(uuid, 0) + 1;
-					if (currentTicks < HELMET_DAMAGE_DELAY * unbreakingAmplifier) {
-						if (throttle == MAX_THROTTLE)
-							LOGGER.finest("Waiting to deal damage: {0}/{1} ticks.",
-							              currentTicks,
-							              HELMET_DAMAGE_DELAY * unbreakingAmplifier
-							);
+						LOGGER.finer("Damaging helmet to {0}/{1}.",
+						             maxDurability - newDamage,
+						             maxDurability
+						);
+					if (maxDurability > newDamage) {
+						//helmet still alive
+						damageable.setDamage(newDamage);
+						helmet.setItemMeta(damageable);
 					} else {
-						int newDamage = damageable.getDamage() + 1;
+						//helmet about to break
 						if (throttle == MAX_THROTTLE)
-							LOGGER.finer("Damaged helmet to {0}/{1}.",
-							             maxDurability - newDamage,
-							             maxDurability
-							);
-						if (maxDurability > newDamage) {
-							damageable.setDamage(newDamage);
-							helmet.setItemMeta(damageable);
-						} else {
-							if (throttle == MAX_THROTTLE)
-								LOGGER.finer("Helmet damage below threshold, breaking. ({0}/{1})",
-								             maxDurability - newDamage,
-								             maxDurability
-								);
-							inventory.setHelmet(null);
-							world.playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1, 1);
-						}
-						currentTicks = 0;
+							LOGGER.finer("Helmet damage below threshold, breaking.");
+						inventory.setHelmet(null);
+						world.playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1, 1);
 					}
-					playerHelmetDamageTicks.put(uuid, currentTicks);
-				}
+					currentTicks = 0;
+				} else if (throttle == MAX_THROTTLE)
+					//still waiting
+					LOGGER.finest("Waiting to deal damage: {0}/{1} ticks.",
+					              currentTicks,
+					              interval * unbreakingAmplifier
+					);
+				helmetDamageTicks.put(uuid, currentTicks);
 				return; //don't do anything if the player has a helmet on
 			}
+			//burn the player; no constraints met
 			if (throttle == MAX_THROTTLE)
 				LOGGER.fine("No constraints met for {0}, igniting.", playerName);
-			playerHelmetDamageTicks.remove(uuid); //player lost/took helmet off
-			player.setFireTicks(FIRE_LENGTH);
+			helmetDamageTicks.remove(uuid); //player has no helmet if we're here
+			player.setFireTicks(burnLength);
 			if (throttle == MAX_THROTTLE) throttle = 0;
 			else throttle++;
 		});
 	}
+	
+	public Set<GameMode> getAffectedGamemodes() {
+		return Collections.unmodifiableSet(affectedGamemodes);
+	}
+	
+	public Set<Environment> getAffectedDimensions() {
+		return Collections.unmodifiableSet(affectedDimensions);
+	}
+	
 }

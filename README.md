@@ -54,6 +54,5 @@ helmetDamage:
 ### TODO
 - Add documentation
 - Add more tests
-- Rework `IgnitePlayersTask`
 - Try to make `plugin.yml` command declaration optional
 - Allow changing of plugin log levels in `config.yml`
