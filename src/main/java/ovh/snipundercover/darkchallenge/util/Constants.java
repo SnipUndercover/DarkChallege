@@ -16,4 +16,5 @@ public final class Constants {
 			Material.TALL_SEAGRASS,
 			Material.WATER
 	);
+	public static final byte MAX_SAFE_SKY_LIGHT = 11;
 }

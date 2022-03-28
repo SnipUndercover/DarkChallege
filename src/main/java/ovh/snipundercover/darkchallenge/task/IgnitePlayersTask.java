@@ -102,8 +102,9 @@ public class IgnitePlayersTask extends PluginTask {
 		ConfigurationSection helmetDamage = config.getConfigurationSection("helmetDamage");
 		assert helmetDamage != null;
 		this.interval = helmetDamage.getInt("interval");
-		LOGGER.config("Helmet damage interval: {0} ({1} seconds)",
-		              this.interval, "%.2f".formatted(this.interval / 20f)
+		if (this.interval <= 0) LOGGER.config("Helmet damage interval: {0}, disabled.", this.interval);
+		else LOGGER.config("Helmet damage interval: {0} ({1} seconds)",
+		                   this.interval, "%.2f".formatted(this.interval / 20f)
 		);
 		
 		this.ignoreUnbreaking = helmetDamage.getBoolean("ignoreUnbreaking");
@@ -162,7 +163,7 @@ public class IgnitePlayersTask extends PluginTask {
 			
 			//don't do anything if the player's in the dark
 			final byte skyLight = block.getLightFromSky();
-			if (skyLight <= 11) {
+			if (skyLight <= Constants.MAX_SAFE_SKY_LIGHT) {
 				if (throttle == MAX_THROTTLE) {
 					LOGGER.fine("Ignoring {0}: player is in the dark.", playerName);
 					LOGGER.finer("Player has light level {0}.", skyLight);
@@ -201,69 +202,78 @@ public class IgnitePlayersTask extends PluginTask {
 			final PlayerInventory inventory = player.getInventory();
 			final ItemStack helmet = inventory.getHelmet();
 			
-			if (helmet != null) {
-				if (throttle == MAX_THROTTLE) {
-					LOGGER.fine("Ignoring {0}: player has a helmet.", playerName);
-				}
-				
-				//damage the helmet if possible
-				final int maxDurability = helmet.getType().getMaxDurability();
-				final ItemMeta helmetMeta = helmet.hasItemMeta()
-						? helmet.getItemMeta()
-						: Bukkit.getItemFactory().getItemMeta(helmet.getType());
-				assert helmetMeta != null;
-				
-				if (maxDurability == 0
-						|| helmetMeta.isUnbreakable()
-						|| !(helmetMeta instanceof Damageable damageable))
-					return; //we can't damage the helmet, we're done here
-				
+			if (helmet == null) { //burn the player; no constraints met
 				if (throttle == MAX_THROTTLE)
-					LOGGER.finer("Player's helmet is damageable.", playerName);
-				
-				int unbreakingAmplifier = helmet.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
-				if (throttle == MAX_THROTTLE)
-					LOGGER.finer("Unbreaking level: {0}.", unbreakingAmplifier - 1);
-				
-				//wait HELMET_DAMAGE_DELAY * unbreakingAmplifier seconds between damage
-				int currentTicks = helmetDamageTicks.getOrDefault(uuid, 0) + 1;
-				if (currentTicks >= interval * unbreakingAmplifier) {
-					//time to damage
-					int newDamage = damageable.getDamage() + 1;
-					if (throttle == MAX_THROTTLE)
-						LOGGER.finer("Damaging helmet to {0}/{1}.",
-						             maxDurability - newDamage,
-						             maxDurability
-						);
-					if (maxDurability > newDamage) {
-						//helmet still alive
-						damageable.setDamage(newDamage);
-						helmet.setItemMeta(damageable);
-					} else {
-						//helmet about to break
-						if (throttle == MAX_THROTTLE)
-							LOGGER.finer("Helmet damage below threshold, breaking.");
-						inventory.setHelmet(null);
-						world.playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1, 1);
-					}
-					currentTicks = 0;
-				} else if (throttle == MAX_THROTTLE)
-					//still waiting
-					LOGGER.finest("Waiting to deal damage: {0}/{1} ticks.",
-					              currentTicks,
-					              interval * unbreakingAmplifier
-					);
-				helmetDamageTicks.put(uuid, currentTicks);
-				return; //don't do anything if the player has a helmet on
+					LOGGER.fine("No constraints met for {0}, igniting.", playerName);
+				helmetDamageTicks.remove(uuid);
+				player.setFireTicks(burnLength);
+				return;
 			}
-			//burn the player; no constraints met
+			
+			//player has a helmet on, don't burn
+			
 			if (throttle == MAX_THROTTLE)
-				LOGGER.fine("No constraints met for {0}, igniting.", playerName);
-			helmetDamageTicks.remove(uuid); //player has no helmet if we're here
-			player.setFireTicks(burnLength);
-			if (throttle == MAX_THROTTLE) throttle = 0;
-			else throttle++;
+				LOGGER.fine("Ignoring {0}: player has a helmet.", playerName);
+			
+			if (interval <= 0) {
+				if (throttle == MAX_THROTTLE)
+					LOGGER.fine("Helmet damage disabled, moving on.");
+				return;
+			}
+			
+			//damage the helmet if possible
+			final int maxDurability = helmet.getType().getMaxDurability();
+			final ItemMeta helmetMeta = helmet.getItemMeta();
+			assert helmetMeta != null;
+			
+			if (maxDurability == 0
+					|| helmetMeta.isUnbreakable()
+					// every ItemMeta must extend from CraftMetaItem, which itself extends from Damageable
+					// except for Material#AIR, which of course returns null
+					// meaning the below will always be !true, even for items that do not have durability
+					// well then ¯\_(._.)_/¯
+					|| !(helmetMeta instanceof Damageable damageable))
+				return; //we can't damage the helmet, we're done here
+			
+			if (throttle == MAX_THROTTLE)
+				LOGGER.finer("Player's helmet is damageable.", playerName);
+			
+			int unbreakingAmplifier = helmet.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
+			if (throttle == MAX_THROTTLE)
+				LOGGER.finer("Unbreaking level: {0}.", unbreakingAmplifier - 1);
+			
+			//wait HELMET_DAMAGE_DELAY * unbreakingAmplifier seconds between damage
+			int currentTicks = helmetDamageTicks.getOrDefault(uuid, 0) + 1;
+			if (currentTicks >= interval * unbreakingAmplifier) {
+				//time to damage
+				int newDamage = damageable.getDamage() + 1;
+				if (throttle == MAX_THROTTLE)
+					LOGGER.finer("Damaging helmet to {0}/{1}.",
+					             maxDurability - newDamage,
+					             maxDurability
+					);
+				if (maxDurability > newDamage) {
+					//helmet still alive
+					damageable.setDamage(newDamage);
+					helmet.setItemMeta(damageable);
+				} else {
+					//helmet about to break
+					if (throttle == MAX_THROTTLE)
+						LOGGER.finer("Helmet damage below threshold, breaking.");
+					inventory.setHelmet(null);
+					world.playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1, 1);
+				}
+				currentTicks = 0;
+			} else if (throttle == MAX_THROTTLE)
+				//still waiting
+				LOGGER.finest("Waiting to deal damage: {0}/{1} ticks.",
+				              currentTicks,
+				              interval * unbreakingAmplifier
+				);
+			helmetDamageTicks.put(uuid, currentTicks);
 		});
+		if (throttle == MAX_THROTTLE) throttle = 0;
+		else throttle++;
 	}
 	
 	public Set<GameMode> getAffectedGamemodes() {

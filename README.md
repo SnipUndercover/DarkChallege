@@ -39,6 +39,7 @@ burnLength: 160 # 8 seconds
 helmetDamage:
   # the time to wait between damaging the player's helmet
   # scales with each level of unbreaking
+  # set to 0 or negative to disable helmet damage
   
   # no unbreaking:  80 ticks / 4  seconds
   # unbreaking 1 : 160 ticks / 8  seconds
