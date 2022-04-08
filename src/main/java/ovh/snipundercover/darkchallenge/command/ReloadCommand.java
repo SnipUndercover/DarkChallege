@@ -9,6 +9,7 @@ import ovh.snipundercover.darkchallenge.task.IgnitePlayersTask;
 import ovh.snipundercover.darkchallenge.task.PluginTask;
 import ovh.snipundercover.darkchallenge.util.Utils;
 
+@SuppressWarnings("unused") //used via reflections
 public class ReloadCommand extends PluginCommandExecutor {
 	
 	public static final  String         COMMAND_NAME = "disable";

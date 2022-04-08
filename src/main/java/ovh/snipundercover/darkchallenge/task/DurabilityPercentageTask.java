@@ -13,7 +13,7 @@ import ovh.snipundercover.darkchallenge.logging.PluginLogger;
 import java.util.Objects;
 import java.util.logging.Level;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") //used via reflections
 public final class DurabilityPercentageTask extends PluginTask {
 	
 	public static final  String       OBJECTIVE_NAME = "durability";

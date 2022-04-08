@@ -21,6 +21,7 @@ import ovh.snipundercover.darkchallenge.util.Utils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused") //used via reflections
 public class IgnitePlayersTask extends PluginTask {
 	
 	private static final PluginLogger LOGGER = PluginLogger.getLogger(IgnitePlayersTask.class);

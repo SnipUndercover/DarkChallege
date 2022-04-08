@@ -7,6 +7,7 @@ import ovh.snipundercover.darkchallenge.DarkChallenge;
 import ovh.snipundercover.darkchallenge.permission.PermissionNode;
 import ovh.snipundercover.darkchallenge.util.Utils;
 
+@SuppressWarnings("unused") //used via reflections
 public class DisableCommand extends PluginCommandExecutor {
 	
 	public static final  String         COMMAND_NAME = "disable";
