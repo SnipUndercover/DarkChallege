@@ -8,6 +8,7 @@ import ovh.snipundercover.darkchallenge.task.PluginTask;
 
 public final class DarkChallenge extends JavaPlugin {
 	
+	@Getter
 	private static DarkChallenge instance;
 	
 	@Getter
@@ -25,9 +26,5 @@ public final class DarkChallenge extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		PluginTask.stopAll();
-	}
-	
-	public static DarkChallenge getPlugin() {
-		return instance;
 	}
 }

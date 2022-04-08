@@ -50,7 +50,7 @@ public class IgnitePlayersTask extends PluginTask {
 	@Override
 	public void reload() {
 		LOGGER.info("Reloading {0}...", this.getClass().getSimpleName());
-		FileConfiguration config = DarkChallenge.getPlugin().getConfig();
+		FileConfiguration config = DarkChallenge.getInstance().getConfig();
 		
 		Set<GameMode> affectedGamemodes =
 				config.getStringList("affectedGamemodes")

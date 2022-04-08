@@ -128,7 +128,7 @@ public abstract class PluginTask {
 					if (isCancelled()) return;
 					PluginTask.this.run();
 				}
-			}.runTaskTimer(DarkChallenge.getPlugin(), this.delay, this.period);
+			}.runTaskTimer(DarkChallenge.getInstance(), this.delay, this.period);
 			LOGGER.fine("...done. Task ID: {0}", task.getTaskId());
 			return this.task = task;
 		} catch (Exception e) {

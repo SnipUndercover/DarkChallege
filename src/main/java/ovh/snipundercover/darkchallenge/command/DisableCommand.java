@@ -25,6 +25,6 @@ public class DisableCommand extends PluginCommandExecutor {
 			return;
 		}
 		sender.sendMessage(Utils.color("&eDisabling plugin."));
-		Bukkit.getPluginManager().disablePlugin(DarkChallenge.getPlugin());
+		Bukkit.getPluginManager().disablePlugin(DarkChallenge.getInstance());
 	}
 }

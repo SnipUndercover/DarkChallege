@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 public class PluginLogger {
 	private static final int                       OFF_VAL       = Level.OFF.intValue();
 	private static final int                       INFO_VAL      = Level.INFO.intValue();
-	private static final Logger                    PLUGIN_LOGGER = DarkChallenge.getPlugin().getLogger();
+	private static final Logger                    PLUGIN_LOGGER = DarkChallenge.getInstance().getLogger();
 	private static final Map<String, PluginLogger> LOGGER_LOOKUP = new Hashtable<>();
 	
 	@Getter
