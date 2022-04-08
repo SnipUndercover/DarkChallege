@@ -2,7 +2,7 @@ package ovh.snipundercover.darkchallenge.util;
 
 import org.jetbrains.annotations.NotNull;
 
-public record Range<T extends Comparable<T>>(T start, T stop) {
+public record Range<T extends Comparable<T>>(@NotNull T start, @NotNull T stop) {
 	
 	public Range {
 		if (start.compareTo(stop) > 0)
