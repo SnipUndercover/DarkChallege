@@ -6,7 +6,6 @@ import lombok.ToString;
 import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ovh.snipundercover.darkchallenge.DarkChallenge;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -14,9 +13,6 @@ import java.util.Map;
 @ToString
 @EqualsAndHashCode
 public class PermissionNode {
-	
-	private static final PermissionNode ROOT =
-			new PermissionNode(null, DarkChallenge.getPlugin().getName().toLowerCase());
 	
 	//god the annotations
 	
@@ -35,6 +31,10 @@ public class PermissionNode {
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
 	private final Map<String, PermissionNode> subPermissionLookup = new Hashtable<>();
+	
+	public PermissionNode(@NotNull String name) {
+		this(null, name);
+	}
 	
 	private PermissionNode(PermissionNode parent, @NotNull String name) {
 		if (name.isBlank())
@@ -59,10 +59,5 @@ public class PermissionNode {
 		PermissionNode newNode = new PermissionNode(this, subPermission);
 		subPermissionLookup.put(subPermission, newNode);
 		return newNode;
-	}
-	
-	@Contract(pure = true, value = "_ -> new")
-	public static PermissionNode getPermission(@NotNull String permission) {
-		return PermissionNode.ROOT.getSubPermission(permission);
 	}
 }

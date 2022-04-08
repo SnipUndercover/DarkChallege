@@ -10,7 +10,7 @@ import ovh.snipundercover.darkchallenge.util.Utils;
 public class DisableCommand extends PluginCommandExecutor {
 	
 	public static final  String         COMMAND_NAME = "disable";
-	private static final PermissionNode PERMISSION   = PermissionNode.getPermission(COMMAND_NAME);
+	private static final PermissionNode PERMISSION   = DarkChallenge.getPermissionRoot().getSubPermission(COMMAND_NAME);
 	
 	@Override
 	@NotNull

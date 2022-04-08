@@ -12,14 +12,14 @@ class PermissionNodeTest {
 	void getSubPermission() {
 		String bar = "bar";
 		String baz = "baz";
-		PermissionNode barNode = PermissionNode.getPermission(bar);
-		PermissionNode bazNode = PermissionNode.getPermission(baz);
+		PermissionNode barNode = new PermissionNode(bar);
+		PermissionNode bazNode = new PermissionNode(baz);
 		PermissionNode bazBarNode = bazNode.getSubPermission(bar);
 		PermissionNode barBazNode = barNode.getSubPermission(baz);
-		assertEquals("darkchallenge.bar", barNode.getPermissionString());
-		assertEquals("darkchallenge.baz", bazNode.getPermissionString());
-		assertEquals("darkchallenge.bar.baz", barBazNode.getPermissionString());
-		assertEquals("darkchallenge.baz.bar", bazBarNode.getPermissionString());
+		assertEquals("bar", barNode.getPermissionString());
+		assertEquals("baz", bazNode.getPermissionString());
+		assertEquals("bar.baz", barBazNode.getPermissionString());
+		assertEquals("baz.bar", bazBarNode.getPermissionString());
 		assertEquals(barNode, barBazNode.getParent());
 		assertEquals(bazNode, bazBarNode.getParent());
 	}
