@@ -8,3 +8,5 @@ website:     https://snipundercover.ovh/
 commands:
   disable:
     description: Disable the plugin.
+  reload:
+    description: Reload the configuration.
