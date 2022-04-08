@@ -6,7 +6,9 @@ public record Range<T extends Comparable<T>>(T start, T stop) {
 	
 	public Range {
 		if (start.compareTo(stop) > 0)
-			throw new IllegalArgumentException("The beginning of this range is after its end.");
+			throw new IllegalArgumentException(
+					"The beginning of this range is after its end. (%s > %s)".formatted(start, stop)
+			);
 	}
 	
 	public boolean isInRange(@NotNull T val) {
