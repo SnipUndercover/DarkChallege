@@ -17,11 +17,12 @@ import java.util.logging.Level;
 public final class DurabilityPercentageTask extends PluginTask {
 	
 	public static final  String       OBJECTIVE_NAME = "durability";
+	private static final PluginLogger LOGGER         = PluginLogger.getLogger(DurabilityPercentageTask.class);
 	private static final Scoreboard   scoreboard     =
 			Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard();
-	private static final PluginLogger LOGGER         = PluginLogger.getLogger(DurabilityPercentageTask.class);
-	private              int          throttle       = 0;
-	private static final int          MAX_THROTTLE   = 20;
+	
+	private              int throttle     = 0;
+	private static final int MAX_THROTTLE = 20;
 	
 	//only allow instantiation from PluginTask
 	//we can get instance via PluginTask.getTask(Class<? extends PluginTask>)
@@ -58,7 +59,7 @@ public final class DurabilityPercentageTask extends PluginTask {
 			assert helmetMeta != null;
 			if (throttle == MAX_THROTTLE)
 				LOGGER.finest("Helmet type: {0}, max durability: {1}, unbreakable: {2}, is Damageable: {3}",
-							  helmet.getType(),
+				              helmet.getType(),
 				              maxDurability,
 				              helmetMeta.isUnbreakable(),
 				              helmetMeta instanceof Damageable

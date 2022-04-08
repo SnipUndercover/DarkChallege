@@ -18,14 +18,22 @@ public class PermissionNode {
 	private static final PermissionNode ROOT =
 			new PermissionNode(null, DarkChallenge.getPlugin().getName().toLowerCase());
 	
-	@Getter
-	private final          PermissionNode parent;
-	@Getter
-	private final @NotNull String         name;
+	//god the annotations
 	
-	@Getter @ToString.Exclude @EqualsAndHashCode.Exclude
-	private       String                      permissionString;
-	@ToString.Exclude @EqualsAndHashCode.Exclude
+	@Getter
+	private final PermissionNode parent;
+	
+	@Getter
+	@NotNull
+	private final String name;
+	
+	@Getter
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private final String permissionString;
+	
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private final Map<String, PermissionNode> subPermissionLookup = new Hashtable<>();
 	
 	private PermissionNode(PermissionNode parent, @NotNull String name) {

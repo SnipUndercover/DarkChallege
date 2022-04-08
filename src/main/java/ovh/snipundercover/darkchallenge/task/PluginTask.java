@@ -18,9 +18,9 @@ import java.util.logging.Level;
  * An interface for creating recurring Bukkit tasks with ease.
  */
 public abstract class PluginTask {
-	private static final Map<Class<? extends PluginTask>, PluginTask> TASKS  = new Hashtable<>();
-	private static final PluginLogger                                 LOGGER =
-			PluginLogger.getLogger(PluginTask.class);
+	private static final Map<Class<? extends PluginTask>, PluginTask> TASKS = new Hashtable<>();
+	
+	private static final PluginLogger LOGGER = PluginLogger.getLogger(PluginTask.class);
 	
 	final long delay  = 0L;
 	final long period = 1L;

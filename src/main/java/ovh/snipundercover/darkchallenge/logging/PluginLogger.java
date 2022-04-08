@@ -29,9 +29,13 @@ public class PluginLogger {
 	private static final Map<String, PluginLogger> LOGGER_LOOKUP = new Hashtable<>();
 	
 	@Getter
-	private final @NotNull String name;
-	@Getter @Setter
-	private @NotNull       Level  level = Level.INFO;
+	@NotNull
+	private final String name;
+	
+	@Getter
+	@Setter
+	@NotNull
+	private Level level = Level.INFO;
 	
 	@NotNull
 	public static PluginLogger getLogger(@NotNull Class<?> clazz) {
@@ -124,7 +128,11 @@ public class PluginLogger {
 	}
 	
 	@SuppressWarnings("SpellCheckingInspection")
-	public void logp(Level level, String sourceClass, String sourceMethod, Throwable thrown, @NotNull Supplier<String> msg) {
+	public void logp(Level level,
+	                 String sourceClass,
+	                 String sourceMethod,
+	                 Throwable thrown,
+	                 @NotNull Supplier<String> msg) {
 		logp(level, sourceClass, sourceMethod, msg.get(), thrown);
 	}
 	

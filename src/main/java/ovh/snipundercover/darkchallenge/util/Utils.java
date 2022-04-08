@@ -14,13 +14,15 @@ public final class Utils {
 	private Utils() {}
 	
 	@Contract(pure = true, value = "null -> new")
-	public static @NotNull String color(@Nullable String s) {
+	@NotNull
+	public static String color(@Nullable String s) {
 		if (s == null || s.isEmpty()) return "";
 		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 	
 	@Contract(pure = true, value = "null -> new")
-	public static String @NotNull [] color(String @Nullable ... s) {
+	@NotNull
+	public static String[] color(@Nullable String... s) {
 		if (s == null || s.length == 0) return new String[0];
 		return Arrays.stream(s)
 		             .map(Utils::color)
@@ -28,13 +30,14 @@ public final class Utils {
 	}
 	
 	@Contract(pure = true)
-	public static <T> @NotNull Predicate<T> isParsable(@NotNull Function<T, ?> parse) {
+	@NotNull
+	public static <T> Predicate<T> isParsable(@NotNull Function<T, ?> parse) {
 		return isParsable(parse, null);
 	}
 	
 	@Contract(pure = true)
-	public static <T> @NotNull Predicate<T>
-	isParsable(@NotNull Function<T, ?> parse, BiConsumer<T, Exception> onFail) {
+	@NotNull
+	public static <T> Predicate<T> isParsable(@NotNull Function<T, ?> parse, BiConsumer<T, Exception> onFail) {
 		return (val) -> {
 			try {
 				parse.apply(val);

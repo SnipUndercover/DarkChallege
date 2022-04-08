@@ -24,8 +24,8 @@ import java.util.logging.Level;
 public abstract class PluginCommandExecutor implements CommandExecutor {
 	
 	private static final Map<String, PluginCommandExecutor> COMMAND_HANDLERS = new Hashtable<>();
-	private static final PluginLogger                       LOGGER           =
-			PluginLogger.getLogger(PluginCommandExecutor.class);
+	
+	private static final PluginLogger LOGGER = PluginLogger.getLogger(PluginCommandExecutor.class);
 	
 	public static void initCommands(DarkChallenge plugin) {
 		if (!COMMAND_HANDLERS.isEmpty())
