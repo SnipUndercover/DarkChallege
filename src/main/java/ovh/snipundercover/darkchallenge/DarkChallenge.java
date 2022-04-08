@@ -6,8 +6,11 @@ import ovh.snipundercover.darkchallenge.task.PluginTask;
 
 public final class DarkChallenge extends JavaPlugin {
 	
+	private static DarkChallenge instance;
+	
 	@Override
 	public void onEnable() {
+		instance = this;
 		saveDefaultConfig();
 		PluginCommandExecutor.initCommands(this);
 		PluginTask.startAll();
@@ -19,6 +22,6 @@ public final class DarkChallenge extends JavaPlugin {
 	}
 	
 	public static DarkChallenge getPlugin() {
-		return getPlugin(DarkChallenge.class);
+		return instance;
 	}
 }
